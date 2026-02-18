@@ -4,44 +4,32 @@ import numpy as np
 import json
 import sys
 import os
-# Line ~6: Complete sys.path properly
+
+# CRITICAL: FIRST STREAMLIT COMMAND - NOTHING BEFORE THIS
+st.set_page_config(page_title="Leaf Health Analyzer", layout="wide")
+
 sys.path.insert(0, os.path.dirname(__file__))
 
-# After page_config, add title using the CSS class
-st.markdown('<h1 class="main-title">🍃 Leaf Health Analyzer</h1>', unsafe_allow_html=True)
-
+# Your classes and functions here (unchanged)
 class SimplePlantAnalyzer:
     def __init__(self):
         pass
 
     def analyze(self, image):
-        # Placeholder results matching your expected structure
         return {
-            "leaf_detection": (100, 100, 400, 400),  # x1,y1,x2,y2 bbox
-            "disease": {
-                "label": "Healthy",
-                "confidence": 0.92
-            },
-            "pests": {
-                "pest_count": 0,
-                "pests": []
-            },
+            "leaf_detection": (100, 100, 400, 400),
+            "disease": {"label": "Healthy", "confidence": 0.92},
+            "pests": {"pest_count": 0, "pests": []},
             "dryness": {
-                "dryness_score": 0.15,
-                "dryness_level": "Low",
-                "green_ratio": 0.78,
-                "brown_ratio": 0.12,
-                "saturation_mean": 0.65,
-                "texture_variance": 45.2
+                "dryness_score": 0.15, "dryness_level": "Low",
+                "green_ratio": 0.78, "brown_ratio": 0.12,
+                "saturation_mean": 0.65, "texture_variance": 45.2
             },
             "green_index": {
-                "excess_green": 0.72,
-                "normalized_green": 0.68,
-                "green_score": 0.85
+                "excess_green": 0.72, "normalized_green": 0.68, "green_score": 0.85
             }
         }
 
-# TEMPORARY VISUALIZATION FUNCTIONS
 def draw_leaf_box(image, bbox):
     if bbox and len(bbox) == 4:
         x1, y1, x2, y2 = map(int, bbox)
@@ -50,13 +38,11 @@ def draw_leaf_box(image, bbox):
     return image
 
 def draw_pests(image, pest_data):
-    # Placeholder pest boxes
     if pest_data and pest_data.get('pest_count', 0) > 0:
         cv2.rectangle(image, (200, 200), (250, 250), (0, 0, 255), 2)
         cv2.putText(image, "PEST", (200, 195), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     return image
 
-# TEMPORARY GENAI REPORT
 class GenAIReportGenerator:
     def __init__(self):
         pass
@@ -71,60 +57,27 @@ class GenAIReportGenerator:
             "narrative_report": "The leaf shows good health indicators. Green index is strong (85%), dryness is low (15%), no pests detected, and disease confidence for 'Healthy' is 92%. Continue current care routine with weekly monitoring recommended."
         }
 
-# -------------------------------------------------
-# Page Config
-# -------------------------------------------------
-st.set_page_config(page_title="Leaf Health Analyzer", layout="wide")
-
-# -------------------------------------------------
-# Styling
-# -------------------------------------------------
+# NOW SAFE: CSS styling after config
 st.markdown("""
 <style>
     .main-title {
-        text-align: center;
-        font-size: 48px;
-        font-weight: bold;
-        color: #2E7D32;
-        margin-bottom: 20px;
+        text-align: center; font-size: 48px; font-weight: bold;
+        color: #2E7D32; margin-bottom: 20px;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
-    .metric-card {
-        background: linear-gradient(135deg, #4CAF50, #81C784);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        text-align: center;
-        color: white;
-        font-weight: bold;
-    }
-    .warning-card {
-        background: linear-gradient(135deg, #FF9800, #FFB74D);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        text-align: center;
-        color: white;
-        font-weight: bold;
-    }
-    .error-card {
-        background: linear-gradient(135deg, #F44336, #E57373);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        text-align: center;
-        color: white;
-        font-weight: bold;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 10px;
-        padding: 12px 24px;
-        font-weight: 600;
-    }
+    .metric-card { background: linear-gradient(135deg, #4CAF50, #81C784);
+        padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center; color: white; font-weight: bold; }
+    .warning-card { background: linear-gradient(135deg, #FF9800, #FFB74D);
+        padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center; color: white; font-weight: bold; }
+    .error-card { background: linear-gradient(135deg, #F44336, #E57373);
+        padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center; color: white; font-weight: bold; }
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; }
+    .stTabs [data-baseweb="tab"] { border-radius: 10px; padding: 12px 24px; font-weight: 600; }
 </style>
 """, unsafe_allow_html=True)
 
-
+# Title now works with CSS
+st.markdown('<h1 class="main-title">🍃 Leaf Health Analyzer</h1>', unsafe_allow_html=True)
