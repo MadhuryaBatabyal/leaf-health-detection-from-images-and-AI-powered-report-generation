@@ -181,7 +181,6 @@ uploaded_file = st.file_uploader("Choose JPG/PNG...", type=["jpg", "jpeg", "png"
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Leaf", use_column_width=True)
     
     # Convert for CV2 analysis
     img_np = np.array(image)
@@ -191,19 +190,27 @@ if uploaded_file is not None:
     results = analyzer.analyze(img_cv)
     bbox = results['leaf_detection']
     
-    # ✅ CROP TO LEAF BBOX - PERFECTLY SIZED
+    # 🌿 CROP TO LEAF + FIXED SIZE (zoom-proof!)
     x1, y1, x2, y2 = map(int, bbox)
-    leaf_crop = img_cv[y1:y2, x1:x2]  # Crop to exact leaf bounds
-    leaf_rgb = cv2.cvtColor(leaf_crop, cv2.COLOR_BGR2RGB)  # Back to RGB for display
+    leaf_crop = img_cv[y1:y2, x1:x2]
+    leaf_rgb = cv2.cvtColor(leaf_crop, cv2.COLOR_BGR2RGB)
     
-    st.image(leaf_rgb, caption="🌿 Leaf Only (Cropped)", use_column_width=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image(leaf_rgb, caption="🌿 Leaf Only", width=350)  # FIXED SIZE
+    with col2:
+        # Annotated leaf (same crop, fixed size)
+        annotated_leaf = draw_leaf_box(leaf_crop.copy(), 
+                                     (0, 0, leaf_crop.shape[1], leaf_crop.shape[0]))
+        st.image(annotated_leaf, channels="BGR", 
+                caption="✅ Bounds Overlay", width=350)  # FIXED SIZE
     
-    # Annotated full image (unchanged)
+    # Full image with bbox (smaller, fixed)
     img_annotated = draw_leaf_box(img_cv.copy(), bbox)
     if results['pests']['pest_count'] > 0:
         img_annotated = draw_pests(img_annotated, results['pests'])
+    st.image(img_annotated, channels="BGR", caption="📐 Full Context", width=450)
     
-    st.image(img_annotated, channels="BGR", caption="✅ Analysis Overlay", use_column_width=True)
 
     # Metrics dashboard
     col1, col2, col3, col4 = st.columns(4)
@@ -228,6 +235,7 @@ if uploaded_file is not None:
     st.success("**AI Summary:** " + report["narrative_report"])
 else:
     st.info("👆 Upload an image to analyze leaf health!")
+
 
 
 
