@@ -81,3 +81,37 @@ st.markdown("""
 
 # Title now works with CSS
 st.markdown('<h1 class="main-title">🍃 Leaf Health Analyzer</h1>', unsafe_allow_html=True)
+analyzer = SimplePlantAnalyzer()
+genai = GenAIReportGenerator()
+uploaded_file = st.file_uploader("Upload leaf image", type=['jpg', 'jpeg', 'png'])
+
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Leaf", use_column_width=True)
+    
+    # Analyze
+    img_np = np.array(image)
+    results = analyzer.analyze(img_np)
+    
+    # Visualize (convert for display)
+    img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    img_annotated = draw_leaf_box(img_cv, results['leaf_detection'])
+    if results['pests']['pest_count'] > 0:
+        img_annotated = draw_pests(img_annotated, results['pests'])
+    
+    # Display annotated
+    st.image(img_annotated, channels="BGR", caption="Analysis Overlay")
+    
+    # Metrics in columns
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Disease Confidence", f"{results['disease']['confidence']:.1%}", delta="Healthy")
+    with col2:
+        st.metric("Dryness Score", f"{results['dryness']['dryness_score']:.0%}")
+    with col3:
+        st.metric("Green Score", f"{results['green_index']['green_score']:.0%}")
+    
+    # Report
+    report = genai.generate(results)
+    st.success(report['narrative_report'])
+
