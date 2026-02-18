@@ -5,6 +5,8 @@ import json
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
+import inference.isolated_pipeline
+st.write(dir(inference.isolated_pipeline))  # Lists available names
 
 # Your existing imports...
 from inference.isolated_pipeline import IsolatedPlantAnalyzer
@@ -406,6 +408,7 @@ with tab3:
 
                 except Exception as e:
                     st.error(f"GenAI report generation failed: {str(e)}")
+
 
 
 
