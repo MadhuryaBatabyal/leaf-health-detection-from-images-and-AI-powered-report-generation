@@ -180,32 +180,30 @@ st.subheader("📤 Upload a Leaf Image")
 uploaded_file = st.file_uploader("Choose JPG/PNG...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # Load and display image
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Leaf", use_column_width=True)  # ✅ SAFE for PIL
+    st.image(image, caption="Uploaded Leaf", use_column_width=True)
     
-    # Convert SAFELY for OpenCV
+    # Convert for CV2 analysis
     img_np = np.array(image)
-    if len(img_np.shape) == 2:  # Grayscale
-        img_np = cv2.cvtColor(img_np, cv2.COLOR_GRAY2BGR)
-    elif img_np.shape[2] == 4:  # RGBA -> BGR
-        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
-    else:  # RGB -> BGR
-        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-    img_cv = img_np  # Already BGR now
+    img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
     
-    # Analyze (rest unchanged)
+    # Analyze
     results = analyzer.analyze(img_cv)
-
-    # Draw overlays
-    img_annotated = draw_leaf_box(img_cv.copy(), results["leaf_detection"])
-    if results["pests"]["pest_count"] > 0:
-        img_annotated = draw_pests(img_annotated, results["pests"])
-
-    st.image(
-        img_annotated, channels="BGR",
-        caption="✅ Analysis Overlay (Green=Leaf, Red=Pest)",
-    )
+    bbox = results['leaf_detection']
+    
+    # ✅ CROP TO LEAF BBOX - PERFECTLY SIZED
+    x1, y1, x2, y2 = map(int, bbox)
+    leaf_crop = img_cv[y1:y2, x1:x2]  # Crop to exact leaf bounds
+    leaf_rgb = cv2.cvtColor(leaf_crop, cv2.COLOR_BGR2RGB)  # Back to RGB for display
+    
+    st.image(leaf_rgb, caption="🌿 Leaf Only (Cropped)", use_column_width=True)
+    
+    # Annotated full image (unchanged)
+    img_annotated = draw_leaf_box(img_cv.copy(), bbox)
+    if results['pests']['pest_count'] > 0:
+        img_annotated = draw_pests(img_annotated, results['pests'])
+    
+    st.image(img_annotated, channels="BGR", caption="✅ Analysis Overlay", use_column_width=True)
 
     # Metrics dashboard
     col1, col2, col3, col4 = st.columns(4)
@@ -230,5 +228,6 @@ if uploaded_file is not None:
     st.success("**AI Summary:** " + report["narrative_report"])
 else:
     st.info("👆 Upload an image to analyze leaf health!")
+
 
 
