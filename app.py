@@ -180,15 +180,21 @@ st.subheader("📤 Upload a Leaf Image")
 uploaded_file = st.file_uploader("Choose JPG/PNG...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
+    # Load and display image
     image = Image.open(uploaded_file)
-    img_np = np.array(image)
-    st.image(img_np, caption="Uploaded Leaf", use_container_width=True)
+    st.image(image, caption="Uploaded Leaf", use_column_width=True)  # ✅ SAFE for PIL
     
-    # Use img_np directly for CV2 (no conversion needed)
-    img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-
-
-    # Analyze
+    # Convert SAFELY for OpenCV
+    img_np = np.array(image)
+    if len(img_np.shape) == 2:  # Grayscale
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_GRAY2BGR)
+    elif img_np.shape[2] == 4:  # RGBA -> BGR
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
+    else:  # RGB -> BGR
+        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    img_cv = img_np  # Already BGR now
+    
+    # Analyze (rest unchanged)
     results = analyzer.analyze(img_cv)
 
     # Draw overlays
@@ -224,4 +230,5 @@ if uploaded_file is not None:
     st.success("**AI Summary:** " + report["narrative_report"])
 else:
     st.info("👆 Upload an image to analyze leaf health!")
+
 
