@@ -4,7 +4,7 @@ import numpy as np
 import json
 import sys
 import os
-sys.path
+sys.path.insert(0, os.path.dirname(__file__))
 
 # -------------------------------------------------
 # TEMPORARY ANALYZER - Replace inference imports
@@ -84,4 +84,5 @@ st.markdown("""
         text-align: center;
         font-size: 48px;
         font-weight
+
 
