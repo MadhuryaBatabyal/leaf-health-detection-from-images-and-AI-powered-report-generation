@@ -181,11 +181,12 @@ uploaded_file = st.file_uploader("Choose JPG/PNG...", type=["jpg", "jpeg", "png"
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Leaf", use_container_width=True)
-
-    # Convert for CV2 analysis
     img_np = np.array(image)
+    st.image(img_np, caption="Uploaded Leaf", use_container_width=True)
+    
+    # Use img_np directly for CV2 (no conversion needed)
     img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+
 
     # Analyze
     results = analyzer.analyze(img_cv)
@@ -223,3 +224,4 @@ if uploaded_file is not None:
     st.success("**AI Summary:** " + report["narrative_report"])
 else:
     st.info("👆 Upload an image to analyze leaf health!")
+
