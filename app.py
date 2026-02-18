@@ -3,7 +3,11 @@ import cv2
 import numpy as np
 import json
 
-from inference.isolated_pipeline import IsolatedPlantAnalyzer
+try:
+    from inference.isolated_pipeline import IsolatedPlantAnalyzer
+except ImportError:
+    from isolated_pipeline import IsolatedPlantAnalyzer  # Fallback
+
 from utils.visualization import draw_leaf_box, draw_pests
 from inference.genAI_report import GenAIReportGenerator
 
@@ -402,5 +406,6 @@ with tab3:
 
                 except Exception as e:
                     st.error(f"GenAI report generation failed: {str(e)}")
+
 
 
