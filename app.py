@@ -4,6 +4,8 @@ import numpy as np
 import json
 import sys
 import os
+from PIL import Image  # REQUIRED for Image.open()
+import io  # Optional: safer file handling
 
 # CRITICAL: FIRST STREAMLIT COMMAND - NOTHING BEFORE THIS
 st.set_page_config(page_title="Leaf Health Analyzer", layout="wide")
@@ -81,37 +83,49 @@ st.markdown("""
 
 # Title now works with CSS
 st.markdown('<h1 class="main-title">🍃 Leaf Health Analyzer</h1>', unsafe_allow_html=True)
+# Main app logic - SAFE VERSION
 analyzer = SimplePlantAnalyzer()
 genai = GenAIReportGenerator()
-uploaded_file = st.file_uploader("Upload leaf image", type=['jpg', 'jpeg', 'png'])
 
-if uploaded_file:
+st.subheader("📤 Upload a Leaf Image")
+uploaded_file = st.file_uploader("Choose JPG/PNG...", type=['jpg', 'jpeg', 'png'])
+
+if uploaded_file is not None:
+    # Read & display image
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Leaf", use_column_width=True)
     
-    # Analyze
+    # Convert for CV2 analysis
     img_np = np.array(image)
-    results = analyzer.analyze(img_np)
-    
-    # Visualize (convert for display)
     img_cv = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-    img_annotated = draw_leaf_box(img_cv, results['leaf_detection'])
+    
+    # Analyze
+    results = analyzer.analyze(img_cv)
+    
+    # Draw overlays
+    img_annotated = draw_leaf_box(img_cv.copy(), results['leaf_detection'])
     if results['pests']['pest_count'] > 0:
         img_annotated = draw_pests(img_annotated, results['pests'])
     
-    # Display annotated
-    st.image(img_annotated, channels="BGR", caption="Analysis Overlay")
+    st.image(img_annotated, channels="BGR", caption="✅ Analysis Overlay (Green=Leaf, Red=Pest)")
     
-    # Metrics in columns
-    col1, col2, col3 = st.columns(3)
+    # Metrics dashboard
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Disease Confidence", f"{results['disease']['confidence']:.1%}", delta="Healthy")
+        st.metric("🦠 Disease", results['disease']['label'], f"{results['disease']['confidence']:.0%}")
     with col2:
-        st.metric("Dryness Score", f"{results['dryness']['dryness_score']:.0%}")
+        st.metric("🌿 Dryness", results['dryness']['dryness_level'], f"{results['dryness']['dryness_score']:.0%}")
     with col3:
-        st.metric("Green Score", f"{results['green_index']['green_score']:.0%}")
+        st.metric("🍃 Green Score", f"{results['green_index']['green_score']:.0%}")
+    with col4:
+        st.metric("🐛 Pests", results['pests']['pest_count'])
     
-    # Report
+    # AI Report
     report = genai.generate(results)
-    st.success(report['narrative_report'])
+    st.balloons()
+    st.success("**AI Summary:** " + report['narrative_report'])
+else:
+    st.info("👆 Upload an image to analyze leaf health!")
+
+
 
