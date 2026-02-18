@@ -2,12 +2,12 @@ import streamlit as st
 import cv2
 import numpy as np
 import json
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
 
-try:
-    from inference.isolated_pipeline import IsolatedPlantAnalyzer
-except ImportError:
-    from isolated_pipeline import IsolatedPlantAnalyzer  # Fallback
-
+# Your existing imports...
+from inference.isolated_pipeline import IsolatedPlantAnalyzer
 from utils.visualization import draw_leaf_box, draw_pests
 from inference.genAI_report import GenAIReportGenerator
 
@@ -406,6 +406,7 @@ with tab3:
 
                 except Exception as e:
                     st.error(f"GenAI report generation failed: {str(e)}")
+
 
 
 
