@@ -13,22 +13,67 @@ st.set_page_config(page_title="Leaf Health Analyzer", layout="wide")
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Your classes and functions here (unchanged)
-class SimplePlantAnalyzer:
+class RealPlantAnalyzer:
     def __init__(self):
         pass
 
-    def analyze(self, image):
+    def analyze(self, image_cv):
+        # Convert to HSV for plant colors
+        hsv = cv2.cvtColor(image_cv, cv2.COLOR_BGR2HSV)
+        h, w = image_cv.shape[:2]
+        total_pixels = h * w
+        
+        # Green leaf mask
+        green_lower = np.array([35, 40, 40])
+        green_upper = np.array([85, 255, 255])
+        green_mask = cv2.inRange(hsv, green_lower, green_upper)
+        green_ratio = cv2.countNonZero(green_mask) / total_pixels
+        
+        # Brown/dry mask
+        brown_lower = np.array([10, 100, 20])
+        brown_upper = np.array([25, 255, 200])
+        brown_mask = cv2.inRange(hsv, brown_lower, brown_upper)
+        brown_ratio = cv2.countNonZero(brown_mask) / total_pixels
+        
+        # Leaf bbox: largest green contour
+        contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            largest = max(contours, key=cv2.contourArea)
+            x,y,w_bbox,h_bbox = cv2.boundingRect(largest)
+            bbox = (x, y, x+w_bbox, y+h_bbox)
+        else:
+            bbox = (int(0.3*w), int(0.2*h), int(0.7*w), int(0.8*h))
+        
+        # Pests: small dark spots (placeholder - real needs detection model)
+        pest_count = len([c for c in contours if 50 < cv2.contourArea(c) < 500])
+        
+        # Scores
+        dryness_score = brown_ratio * 1.5
+        dryness_level = "Low" if dryness_score < 0.2 else "Medium" if dryness_score < 0.5 else "High"
+        green_score = green_ratio * 1.2
+        
         return {
-            "leaf_detection": (100, 100, 400, 400),
-            "disease": {"label": "Healthy", "confidence": 0.92},
-            "pests": {"pest_count": 0, "pests": []},
+            "leaf_detection": bbox,
+            "disease": {
+                "label": "Healthy" if green_score > 0.6 else "Blight Suspect" if dryness_score > 0.3 else "Healthy",
+                "confidence": min(green_score * 1.1, 0.95)
+            },
+            "pests": {
+                "pest_count": pest_count,
+                "pests": []  # bbox list for real
+            },
             "dryness": {
-                "dryness_score": 0.15, "dryness_level": "Low",
-                "green_ratio": 0.78, "brown_ratio": 0.12,
-                "saturation_mean": 0.65, "texture_variance": 45.2
+                "dryness_score": dryness_score,
+                "dryness_level": dryness_level,
+                "green_ratio": green_ratio,
+                "brown_ratio": brown_ratio,
+                "saturation_mean": np.mean(hsv[:,:,1])/255,
+                "texture_variance": np.std(image_cv[:,:,0]) / 255
             },
             "green_index": {
-                "excess_green": 0.72, "normalized_green": 0.68, "green_score": 0.85
+                "excess_green": green_ratio,
+                "normalized_green": green_ratio / max(green_ratio + 0.1, 0.1),
+                "green_score": green_score
             }
         }
 
@@ -126,6 +171,7 @@ if uploaded_file is not None:
     st.success("**AI Summary:** " + report['narrative_report'])
 else:
     st.info("👆 Upload an image to analyze leaf health!")
+
 
 
 
