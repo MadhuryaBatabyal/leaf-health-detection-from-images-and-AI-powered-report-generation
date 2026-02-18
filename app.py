@@ -4,11 +4,12 @@ import numpy as np
 import json
 import sys
 import os
+# Line ~6: Complete sys.path properly
 sys.path.insert(0, os.path.dirname(__file__))
 
-# -------------------------------------------------
-# TEMPORARY ANALYZER - Replace inference imports
-# -------------------------------------------------
+# After page_config, add title using the CSS class
+st.markdown('<h1 class="main-title">🍃 Leaf Health Analyzer</h1>', unsafe_allow_html=True)
+
 class SimplePlantAnalyzer:
     def __init__(self):
         pass
@@ -83,6 +84,47 @@ st.markdown("""
     .main-title {
         text-align: center;
         font-size: 48px;
-        font-weight
+        font-weight: bold;
+        color: #2E7D32;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .metric-card {
+        background: linear-gradient(135deg, #4CAF50, #81C784);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+    .warning-card {
+        background: linear-gradient(135deg, #FF9800, #FFB74D);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+    .error-card {
+        background: linear-gradient(135deg, #F44336, #E57373);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        text-align: center;
+        color: white;
+        font-weight: bold;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 
