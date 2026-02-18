@@ -79,9 +79,9 @@ st.set_page_config(page_title="Leaf Health Analyzer", layout="wide")
 # Styling
 # -------------------------------------------------
 st.markdown("""
-    <style>
-        .main-title {
-            text-align: center;
-            font-size: 48px;
-           
+<style>
+    .main-title {
+        text-align: center;
+        font-size: 48px;
+        font-weight
 
